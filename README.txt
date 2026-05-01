@@ -3,20 +3,6 @@ Team Task Manager (Ledger)
 
 Full-stack app: React (Vite) + Express + PostgreSQL (Prisma). Users sign up, create projects, invite teammates by email, and manage tasks with Admin vs Member roles.
 
-Live URL
---------
-Deploy to Railway (see below), then paste your public URL here:
-  - Live Application URL: https://YOUR-APP.up.railway.app
-
-GitHub
-------
-Push this folder to a new repository and submit the link:
-  - GitHub Repository: https://github.com/YOU/team-task-manager
-
-Demo video (2–5 minutes)
-------------------------
-Record a short walkthrough: signup, create project, invite a second user (second browser/incognito), create tasks, assign, change status, show dashboard overdue counts, and mention Admin vs Member limits.
-
 Local development
 -----------------
 Requirements: Node.js 20+, PostgreSQL (local or Docker).
