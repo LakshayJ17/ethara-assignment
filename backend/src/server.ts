@@ -254,37 +254,37 @@ app.get('/api/health', (_request, response) => {
   response.json({ ok: true });
 });
 
-app.post(
-  '/api/auth/signup',
-  asyncHandler(async (request, response) => {
-    const parsed = authSchema.safeParse(request.body);
+const signupHandler = asyncHandler(async (request: Request, response: Response) => {
+  const parsed = authSchema.safeParse(request.body);
 
-    if (!parsed.success) {
-      response.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid signup details' });
-      return;
+  if (!parsed.success) {
+    response.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid signup details' });
+    return;
+  }
+
+  const existingUser = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+
+  if (existingUser) {
+    response.status(409).json({ error: 'That email is already registered' });
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+  const user = await prisma.user.create({
+    data: {
+      name: parsed.data.name,
+      email: parsed.data.email,
+      passwordHash,
+      role: parsed.data.role
     }
+  });
 
-    const existingUser = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  const sessionUser: SessionUser = formatUser(user);
+  response.status(201).json({ token: tokenForUser(sessionUser), user: sessionUser });
+});
 
-    if (existingUser) {
-      response.status(409).json({ error: 'That email is already registered' });
-      return;
-    }
-
-    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-    const user = await prisma.user.create({
-      data: {
-        name: parsed.data.name,
-        email: parsed.data.email,
-        passwordHash,
-        role: parsed.data.role
-      }
-    });
-
-    const sessionUser: SessionUser = formatUser(user);
-    response.status(201).json({ token: tokenForUser(sessionUser), user: sessionUser });
-  })
-);
+app.post('/api/auth/signup', signupHandler);
+app.post('/api/auth/register', signupHandler);
 
 app.post(
   '/api/auth/login',
@@ -857,10 +857,6 @@ app.post(
   })
 );
 
-app.use((_request, response) => {
-  response.status(404).json({ error: 'Route not found' });
-});
-
 app.use((error: unknown, _request: Request, response: Response, _next: NextFunction) => {
   if (error instanceof z.ZodError) {
     response.status(400).json({ error: error.issues[0]?.message ?? 'Invalid request' });
@@ -879,18 +875,26 @@ app.use((error: unknown, _request: Request, response: Response, _next: NextFunct
 const start = async () => {
   if (!fs.existsSync(publicDir)) {
     console.warn(`Static build folder not found at ${publicDir}. Build the frontend before starting production.`);
+  } else {
+    app.use(express.static(publicDir, { index: false }));
+
+    app.get(/^\/(?!api).*/, (_request, response) => {
+      const indexPath = path.join(publicDir, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        response.sendFile(indexPath);
+        return;
+      }
+
+      response.status(200).send('Frontend build not found. Run the frontend build first.');
+    });
   }
 
-  app.use(express.static(publicDir));
+  app.use('/api', (_request, response) => {
+    response.status(404).json({ error: 'Route not found' });
+  });
 
-  app.get(/^\/(?!api).*/, (_request, response) => {
-    const indexPath = path.join(publicDir, 'index.html');
-    if (fs.existsSync(indexPath)) {
-      response.sendFile(indexPath);
-      return;
-    }
-
-    response.status(200).send('Frontend build not found. Run the frontend build first.');
+  app.use((_request, response) => {
+    response.status(404).json({ error: 'Not found' });
   });
 
   app.listen(port, () => {

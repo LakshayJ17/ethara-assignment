@@ -40,7 +40,11 @@ export async function request<T>(path: string, init: RequestInit = {}, token?: s
       payload = JSON.parse(text) as unknown;
     } catch {
       if (!response.ok) {
-        throw new ApiError(text.trim().slice(0, 240) || 'Request failed', response.status);
+        const hint =
+          text.includes('Cannot POST') || text.includes('Cannot GET')
+            ? ' API request did not reach the backend. On Vercel set VITE_API_URL to your Railway URL and redeploy; on Railway use the app URL (not Vercel) or deploy the full stack from the repo root.'
+            : '';
+        throw new ApiError((text.trim().slice(0, 240) || 'Request failed') + hint, response.status);
       }
       throw new ApiError('Server returned non-JSON response', response.status);
     }
