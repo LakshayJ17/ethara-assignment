@@ -23,8 +23,8 @@ import {
   TabsTrigger,
   Textarea
 } from './components/ui';
-import { clearStoredToken, getStoredToken, request, setStoredToken } from './lib/api';
-import { fetchDashboard, fetchSessionUser, normalizeUser, signupUser } from './lib/api-compat';
+import { clearStoredToken, getStoredToken, request, setStoredRole, setStoredToken } from './lib/api';
+import { fetchDashboard, fetchProjects, fetchSessionUser, normalizeUser, signupUser } from './lib/api-compat';
 import type { Dashboard, Project, Role, SeedResponse, Task, TaskPriority, TaskStatus, User } from './lib/types';
 
 const authRoles: Role[] = ['Admin', 'Member'];
@@ -205,19 +205,14 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [notice]);
 
-  useEffect(() => {
-    if (!selectedProject && workspaceTab !== 'dashboard') {
-      setWorkspaceTab('dashboard');
-    }
-  }, [selectedProject, workspaceTab]);
-
   async function loadSession(activeToken: string) {
     setLoading(true);
     setError('');
 
     try {
-      setUser(await fetchSessionUser(activeToken));
-      await loadWorkspace(activeToken);
+      const sessionUser = await fetchSessionUser(activeToken);
+      setUser(sessionUser);
+      await loadWorkspace(activeToken, sessionUser);
     } catch {
       clearStoredToken();
       setToken(null);
@@ -229,24 +224,26 @@ function App() {
     }
   }
 
-  async function loadWorkspace(activeToken?: string) {
+  async function loadWorkspace(activeToken?: string, sessionUser?: User) {
     const sessionToken = activeToken ?? token;
 
     if (!sessionToken) {
       return;
     }
 
-    const [projectsResponse, dashboardData] = await Promise.all([
-      request<{ projects: Project[] }>('/api/projects', {}, sessionToken),
+    const currentUser = sessionUser ?? user ?? (await fetchSessionUser(sessionToken));
+
+    const [projectList, dashboardData] = await Promise.all([
+      fetchProjects(sessionToken, currentUser),
       fetchDashboard(sessionToken)
     ]);
 
-    setProjects(projectsResponse.projects);
+    setProjects(projectList);
     setDashboard(dashboardData);
 
-    if (projectsResponse.projects.length) {
+    if (projectList.length) {
       setSelectedProjectId((current) =>
-        projectsResponse.projects.some((project) => project.id === current) ? current : projectsResponse.projects[0].id
+        projectList.some((project) => project.id === current) ? current : projectList[0].id
       );
     } else {
       setSelectedProjectId('');
@@ -272,10 +269,11 @@ function App() {
             ).then((data) => ({ token: data.token, user: normalizeUser(data.user) }));
 
       setStoredToken(response.token);
+      setStoredRole(response.user.role);
       setToken(response.token);
       setUser(response.user);
       setAuthForm(emptyAuthForm);
-      await loadWorkspace(response.token);
+      await loadWorkspace(response.token, response.user);
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Authentication failed');
     } finally {
@@ -741,15 +739,15 @@ function App() {
                 <LayoutDashboard className="h-4 w-4 shrink-0" />
                 Dashboard
               </TabsTrigger>
-              <TabsTrigger value="board" className="min-w-[8.5rem] flex-1 gap-2" disabled={!selectedProject}>
+              <TabsTrigger value="board" className="min-w-[8.5rem] flex-1 gap-2">
                 <LayoutGrid className="h-4 w-4 shrink-0" />
                 Board
               </TabsTrigger>
-              <TabsTrigger value="tasks" className="min-w-[8.5rem] flex-1 gap-2" disabled={!selectedProject}>
+              <TabsTrigger value="tasks" className="min-w-[8.5rem] flex-1 gap-2">
                 <SquarePen className="h-4 w-4 shrink-0" />
                 Tasks
               </TabsTrigger>
-              <TabsTrigger value="team" className="min-w-[8.5rem] flex-1 gap-2" disabled={!selectedProject}>
+              <TabsTrigger value="team" className="min-w-[8.5rem] flex-1 gap-2">
                 <Users className="h-4 w-4 shrink-0" />
                 Team
               </TabsTrigger>

@@ -1,10 +1,23 @@
 const TOKEN_KEY = 'team-task-manager-token';
+const ROLE_KEY = 'team-task-manager-role';
 
 const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
 
 export const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
 export const setStoredToken = (token: string) => localStorage.setItem(TOKEN_KEY, token);
-export const clearStoredToken = () => localStorage.removeItem(TOKEN_KEY);
+export const clearStoredToken = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ROLE_KEY);
+};
+
+export type StoredRole = 'Admin' | 'Member';
+
+export const getStoredRole = (): StoredRole | null => {
+  const value = localStorage.getItem(ROLE_KEY);
+  return value === 'Admin' || value === 'Member' ? value : null;
+};
+
+export const setStoredRole = (role: StoredRole) => localStorage.setItem(ROLE_KEY, role);
 
 export class ApiError extends Error {
   status: number;
