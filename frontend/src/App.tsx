@@ -24,7 +24,8 @@ import {
   Textarea
 } from './components/ui';
 import { clearStoredToken, getStoredToken, request, setStoredToken } from './lib/api';
-import type { AuthResponse, Dashboard, Project, Role, SeedResponse, Task, TaskPriority, TaskStatus, User } from './lib/types';
+import { fetchDashboard, fetchSessionUser, normalizeUser, signupUser } from './lib/api-compat';
+import type { Dashboard, Project, Role, SeedResponse, Task, TaskPriority, TaskStatus, User } from './lib/types';
 
 const authRoles: Role[] = ['Admin', 'Member'];
 const projectColors = [
@@ -215,8 +216,7 @@ function App() {
     setError('');
 
     try {
-      const me = await request<{ user: User }>('/api/auth/me', {}, activeToken);
-      setUser(me.user);
+      setUser(await fetchSessionUser(activeToken));
       await loadWorkspace(activeToken);
     } catch {
       clearStoredToken();
@@ -236,13 +236,13 @@ function App() {
       return;
     }
 
-    const [projectsResponse, dashboardResponse] = await Promise.all([
+    const [projectsResponse, dashboardData] = await Promise.all([
       request<{ projects: Project[] }>('/api/projects', {}, sessionToken),
-      request<{ dashboard: Dashboard }>('/api/dashboard/summary', {}, sessionToken)
+      fetchDashboard(sessionToken)
     ]);
 
     setProjects(projectsResponse.projects);
-    setDashboard(dashboardResponse.dashboard);
+    setDashboard(dashboardData);
 
     if (projectsResponse.projects.length) {
       setSelectedProjectId((current) =>
@@ -263,15 +263,13 @@ function App() {
         ? { ...authForm }
         : { email: authForm.email, password: authForm.password };
 
-      const response = authMode === 'signup'
-        ? await request<AuthResponse>('/api/auth/signup', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-          })
-        : await request<AuthResponse>('/api/auth/login', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-          });
+      const response =
+        authMode === 'signup'
+          ? await signupUser(payload)
+          : await request<{ token: string; user: { id: string; name: string; email: string; role?: string } }>(
+              '/api/auth/login',
+              { method: 'POST', body: JSON.stringify(payload) }
+            ).then((data) => ({ token: data.token, user: normalizeUser(data.user) }));
 
       setStoredToken(response.token);
       setToken(response.token);

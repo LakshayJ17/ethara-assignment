@@ -254,6 +254,10 @@ app.get('/api/health', (_request, response) => {
   response.json({ ok: true });
 });
 
+app.get('/api/version', (_request, response) => {
+  response.json({ version: '2', server: 'server.ts', auth: ['signup', 'register', 'login'] });
+});
+
 const signupHandler = asyncHandler(async (request: Request, response: Response) => {
   const parsed = authSchema.safeParse(request.body);
 
