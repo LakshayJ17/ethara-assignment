@@ -1,5 +1,7 @@
 const TOKEN_KEY = 'team-task-manager-token';
 
+const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
+
 export const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
 export const setStoredToken = (token: string) => localStorage.setItem(TOKEN_KEY, token);
 export const clearStoredToken = () => localStorage.removeItem(TOKEN_KEY);
@@ -16,7 +18,9 @@ export class ApiError extends Error {
 export async function request<T>(path: string, init: RequestInit = {}, token?: string | null): Promise<T> {
   const sendJson = typeof init.body === 'string' && init.body.length > 0;
 
-  const response = await fetch(path, {
+  const url = path.startsWith('http') ? path : `${apiBase}${path}`;
+
+  const response = await fetch(url, {
     ...init,
     headers: {
       ...(sendJson ? { 'Content-Type': 'application/json' } : {}),

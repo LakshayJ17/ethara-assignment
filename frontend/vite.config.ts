@@ -10,7 +10,8 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: '../backend/public',
+    // Vercel expects `dist`; Railway/backend uses `npm run build:backend` instead.
+    outDir: 'dist',
     emptyOutDir: true
   }
 });
