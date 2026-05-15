@@ -17,6 +17,19 @@
   --success: 152 55% 36%;
 }
 
+html.dark {
+  --bg: 220 14% 14%;
+  --panel: 220 13% 22%;
+  --panel-2: 220 12% 28%;
+  --text: 220 9% 96%;
+  --muted: 215 13% 61%;
+  --line: 220 14% 35%;
+  --accent: 239 58% 53%;
+  --accent-hover: 239 52% 45%;
+  --danger: 350 72% 48%;
+  --success: 152 55% 36%;
+}
+
 * {
   box-sizing: border-box;
 }

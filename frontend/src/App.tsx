@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { AlertCircle, CheckCircle2, CirclePlus, Clock3, LayoutDashboard, LayoutGrid, LogOut, Menu, Shield, Sparkles, SquarePen, Users } from 'lucide-react';
+import { AlertCircle, CheckCircle2, CirclePlus, Clock3, LayoutDashboard, LayoutGrid, LogOut, Menu, Moon, RotateCcw, Shield, Sparkles, SquarePen, Sun, Users } from 'lucide-react';
 import {
   Badge,
   Button,
@@ -167,6 +167,22 @@ function App() {
   const [isMemberDialogOpen, setIsMemberDialogOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>('dashboard');
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const stored = localStorage.getItem('theme-mode');
+    if (stored) return stored === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme-mode', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme-mode', 'light');
+    }
+  }, [isDarkMode]);
 
   const selectedProject = useMemo(
     () => projects.find((project) => project.id === selectedProjectId) ?? projects[0] ?? null,
@@ -633,9 +649,14 @@ function App() {
             </div>
             <div className="mt-3 flex items-center justify-between gap-2">
               <Badge variant={user.role === 'Admin' ? 'success' : 'subtle'}>{user.role}</Badge>
-              <Button variant="ghost" size="sm" onClick={logout} className="px-2 text-muted hover:text-text" aria-label="Log out">
-                <LogOut className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setIsDarkMode(!isDarkMode)} className="px-2 text-muted hover:text-text" aria-label="Toggle theme">
+                  {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={logout} className="px-2 text-muted hover:text-text" aria-label="Log out">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -784,6 +805,10 @@ function App() {
                     <Button variant="subtle" size="sm" onClick={() => void seedDemo()} disabled={saving}>
                       <Sparkles className="h-4 w-4" />
                       Seed demo data
+                    </Button>
+                    <Button variant="subtle" size="sm" onClick={() => void refreshWorkspace()} disabled={saving}>
+                      <RotateCcw className="h-4 w-4" />
+                      Refresh
                     </Button>
                     {selectedProject ? (
                       <>

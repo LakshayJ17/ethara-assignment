@@ -1,4 +1,6 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// Minimal local types to avoid depending on @vercel/node devDependency
+type VercelRequest = any;
+type VercelResponse = any;
 
 /**
  * Proxies /api/* from the Vercel frontend to the Railway (or other) backend.

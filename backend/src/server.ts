@@ -247,7 +247,24 @@ const formatDashboard = async (user: SessionUser) => {
   };
 };
 
-app.use(cors({ origin: true }));
+const corsOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://ethara-assignment-frontend.vercel.app'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || corsOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_request, response) => {
