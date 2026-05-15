@@ -2,18 +2,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
-<<<<<<< HEAD
 // Migrations: prisma/migrations/
 // See legacy_baseline.prisma for the older DB shape upgraded by 20250514180100_upgrade_legacy_to_v2.
 
-=======
->>>>>>> 0f9bae4a99847349a5ef112afe550379f81b4399
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-<<<<<<< HEAD
 enum Role {
   Admin
   Member
@@ -66,50 +62,10 @@ model ProjectMember {
   joinedAt   DateTime @default(now())
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-=======
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  createdAt    DateTime @default(now())
-
-  ownedProjects Project[]      @relation("ProjectOwner")
-  memberships   ProjectMember[]
-  tasksCreated  Task[]         @relation("TaskCreator")
-  tasksAssigned Task[]         @relation("TaskAssignee")
-}
-
-model Project {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  ownerId     String
-  owner       User     @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members     ProjectMember[]
-  tasks       Task[]
-  createdAt   DateTime @default(now())
-}
-
-enum MemberRole {
-  ADMIN
-  MEMBER
-}
-
-model ProjectMember {
-  id        String     @id @default(cuid())
-  projectId String
-  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      MemberRole @default(MEMBER)
-  joinedAt  DateTime   @default(now())
->>>>>>> 0f9bae4a99847349a5ef112afe550379f81b4399
 
   @@unique([projectId, userId])
 }
 
-<<<<<<< HEAD
 model Task {
   id          String         @id @default(cuid())
   title       String
@@ -126,27 +82,4 @@ model Task {
   project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   creator     User           @relation("CreatedTasks", fields: [creatorId], references: [id], onDelete: Cascade)
   assignee    User?          @relation("AssignedTasks", fields: [assigneeId], references: [id], onDelete: SetNull)
-=======
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  DONE
-}
-
-model Task {
-  id          String     @id @default(cuid())
-  projectId   String
-  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  title       String
-  description String?
-  status      TaskStatus @default(TODO)
-  priority    Int        @default(0)
-  dueDate     DateTime?
-  assigneeId  String?
-  assignee    User?      @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
-  createdById String
-  createdBy   User       @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
->>>>>>> 0f9bae4a99847349a5ef112afe550379f81b4399
 }

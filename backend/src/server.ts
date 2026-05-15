@@ -16,6 +16,10 @@ const port = Number(process.env.PORT ?? 4000);
 const jwtSecret = process.env.JWT_SECRET ?? 'team-task-manager-secret';
 const publicDir = path.resolve(process.cwd(), 'public');
 
+/** Express 5 types `params` values as `string | string[]`. */
+const routeStringParam = (value: string | string[] | undefined): string | undefined =>
+  value === undefined ? undefined : Array.isArray(value) ? value[0] : value;
+
 type SessionUser = {
   id: string;
   name: string;
@@ -383,7 +387,12 @@ app.get(
   requireAuth,
   asyncHandler(async (request, response) => {
     const user = (request as AuthedRequest).user;
-    const project = await getProjectForUser(request.params.projectId, user);
+    const projectId = routeStringParam(request.params.projectId);
+    if (!projectId) {
+      response.status(400).json({ error: 'Invalid project id' });
+      return;
+    }
+    const project = await getProjectForUser(projectId, user);
 
     if (!project) {
       response.status(404).json({ error: 'Project not found' });
@@ -399,7 +408,12 @@ app.patch(
   requireAuth,
   asyncHandler(async (request, response) => {
     const user = (request as AuthedRequest).user;
-    const existingProject = await prisma.project.findUnique({ where: { id: request.params.projectId } });
+    const projectId = routeStringParam(request.params.projectId);
+    if (!projectId) {
+      response.status(400).json({ error: 'Invalid project id' });
+      return;
+    }
+    const existingProject = await prisma.project.findUnique({ where: { id: projectId } });
 
     if (!existingProject) {
       response.status(404).json({ error: 'Project not found' });
@@ -441,7 +455,12 @@ app.post(
   requireAuth,
   asyncHandler(async (request, response) => {
     const user = (request as AuthedRequest).user;
-    const existingProject = await prisma.project.findUnique({ where: { id: request.params.projectId } });
+    const projectId = routeStringParam(request.params.projectId);
+    if (!projectId) {
+      response.status(400).json({ error: 'Invalid project id' });
+      return;
+    }
+    const existingProject = await prisma.project.findUnique({ where: { id: projectId } });
 
     if (!existingProject) {
       response.status(404).json({ error: 'Project not found' });
@@ -499,7 +518,12 @@ app.get(
   requireAuth,
   asyncHandler(async (request, response) => {
     const user = (request as AuthedRequest).user;
-    const project = await getProjectForUser(request.params.projectId, user);
+    const projectId = routeStringParam(request.params.projectId);
+    if (!projectId) {
+      response.status(400).json({ error: 'Invalid project id' });
+      return;
+    }
+    const project = await getProjectForUser(projectId, user);
 
     if (!project) {
       response.status(404).json({ error: 'Project not found' });
@@ -515,8 +539,13 @@ app.post(
   requireAuth,
   asyncHandler(async (request, response) => {
     const user = (request as AuthedRequest).user;
+    const projectId = routeStringParam(request.params.projectId);
+    if (!projectId) {
+      response.status(400).json({ error: 'Invalid project id' });
+      return;
+    }
     const project = await prisma.project.findUnique({
-      where: { id: request.params.projectId },
+      where: { id: projectId },
       include: { members: true }
     });
 
@@ -579,8 +608,13 @@ app.patch(
   requireAuth,
   asyncHandler(async (request, response) => {
     const user = (request as AuthedRequest).user;
+    const taskId = routeStringParam(request.params.taskId);
+    if (!taskId) {
+      response.status(400).json({ error: 'Invalid task id' });
+      return;
+    }
     const task = await prisma.task.findUnique({
-      where: { id: request.params.taskId },
+      where: { id: taskId },
       include: { project: { include: { members: true } }, assignee: true, creator: true }
     });
 
@@ -653,7 +687,9 @@ app.patch(
         }
       }
 
-      payload.assigneeId = parsed.data.assigneeId || null;
+      payload.assignee = parsed.data.assigneeId
+        ? { connect: { id: parsed.data.assigneeId } }
+        : { disconnect: true };
     }
 
     if (Object.keys(payload).length === 0) {
@@ -676,8 +712,13 @@ app.delete(
   requireAuth,
   asyncHandler(async (request, response) => {
     const user = (request as AuthedRequest).user;
+    const taskId = routeStringParam(request.params.taskId);
+    if (!taskId) {
+      response.status(400).json({ error: 'Invalid task id' });
+      return;
+    }
     const task = await prisma.task.findUnique({
-      where: { id: request.params.taskId },
+      where: { id: taskId },
       include: { project: true }
     });
 

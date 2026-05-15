@@ -1,18 +1,29 @@
-# Dependencies
-node_modules/
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
 
-# Build output
-dist/
-*.tsbuildinfo
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Local env
+# Env
 .env
 .env.*
 !.env.example
 
-# Logs
-*.log
+# Dependencies & builds
+node_modules/
+dist/
+public/
+coverage/
+*.tsbuildinfo
+.cache/
+.eslintcache
 
-# Prisma local artifacts
+# Prisma local DB (sqlite / file-based experiments)
 prisma/*.db
 prisma/*.db-journal

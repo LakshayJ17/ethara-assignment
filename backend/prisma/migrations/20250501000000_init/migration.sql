@@ -1,20 +1,12 @@
-<<<<<<< HEAD
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
-=======
--- CreateEnum
-CREATE TYPE "MemberRole" AS ENUM ('ADMIN', 'MEMBER');
->>>>>>> 0f9bae4a99847349a5ef112afe550379f81b4399
 
 -- CreateEnum
 CREATE TYPE "TaskStatus" AS ENUM ('TODO', 'IN_PROGRESS', 'DONE');
 
-<<<<<<< HEAD
 -- CreateEnum
 CREATE TYPE "MemberRole" AS ENUM ('ADMIN', 'MEMBER');
 
-=======
->>>>>>> 0f9bae4a99847349a5ef112afe550379f81b4399
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -81,19 +73,10 @@ ALTER TABLE "ProjectMember" ADD CONSTRAINT "ProjectMember_projectId_fkey" FOREIG
 ALTER TABLE "ProjectMember" ADD CONSTRAINT "ProjectMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-<<<<<<< HEAD
-=======
 ALTER TABLE "Task" ADD CONSTRAINT "Task_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
->>>>>>> 0f9bae4a99847349a5ef112afe550379f81b4399
 ALTER TABLE "Task" ADD CONSTRAINT "Task_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-<<<<<<< HEAD
-
--- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-=======
->>>>>>> 0f9bae4a99847349a5ef112afe550379f81b4399
