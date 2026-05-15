@@ -4,6 +4,8 @@
 
 The frontend is already configured to deploy on Vercel at: https://ethara-assignment-frontend.vercel.app/
 
+If signup shows `NOT_FOUND` on `/api/auth/signup`, the Vercel project is not seeing the API proxy route. This repo now includes a root-level proxy at `api/[...path].ts` so the route works whether the Vercel root is the repository root or the `frontend` folder.
+
 ### Setup Instructions:
 
 1. **Environment Variables on Vercel**:
@@ -12,7 +14,13 @@ The frontend is already configured to deploy on Vercel at: https://ethara-assign
      - `BACKEND_URL`: The URL of your backend API (e.g., `https://your-backend.up.railway.app`)
    - No trailing slash on the URL
 
-2. **Auto-deployment**:
+2. **If you still see `NOT_FOUND`**:
+   - Redeploy the Vercel project after this commit.
+   - Make sure the project root contains the `api` folder from this repo.
+   - If your Vercel project root is `frontend`, keep the existing `frontend/api/[...path].ts` route.
+   - If your Vercel project root is the repository root, the new top-level `api/[...path].ts` route will handle `/api/*`.
+
+3. **Auto-deployment**:
    - Changes pushed to the main/master branch will automatically deploy
    - Vercel will build and deploy the frontend automatically
 
