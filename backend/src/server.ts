@@ -250,12 +250,18 @@ const formatDashboard = async (user: SessionUser) => {
 const corsOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://ethara-assignment-frontend.vercel.app'
+  'https://ethara-assignment-frontend.vercel.app',
+  ...(process.env.CORS_ORIGINS?.split(',').map((origin) => origin.trim()).filter(Boolean) ?? [])
+];
+
+const corsOriginPatterns = [
+  /^https:\/\/[a-z0-9-]+\.vercel\.app$/i
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || corsOrigins.includes(origin)) {
+    const allowedByPattern = Boolean(origin && corsOriginPatterns.some((pattern) => pattern.test(origin)));
+    if (!origin || corsOrigins.includes(origin) || allowedByPattern) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

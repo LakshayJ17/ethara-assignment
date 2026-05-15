@@ -3,6 +3,14 @@ const ROLE_KEY = 'team-task-manager-role';
 
 const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
 
+const shouldUseSameOriginApi = (path: string) => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return window.location.hostname.endsWith('.vercel.app') && path.startsWith('/api');
+};
+
 export const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
 export const setStoredToken = (token: string) => localStorage.setItem(TOKEN_KEY, token);
 export const clearStoredToken = () => {
@@ -31,7 +39,11 @@ export class ApiError extends Error {
 export async function request<T>(path: string, init: RequestInit = {}, token?: string | null): Promise<T> {
   const sendJson = typeof init.body === 'string' && init.body.length > 0;
 
-  const url = path.startsWith('http') ? path : `${apiBase}${path}`;
+  const url = path.startsWith('http')
+    ? path
+    : shouldUseSameOriginApi(path)
+      ? path
+      : `${apiBase}${path}`;
 
   const response = await fetch(url, {
     ...init,

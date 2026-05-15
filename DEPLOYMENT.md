@@ -65,7 +65,26 @@ The backend CORS settings allow:
 - `http://localhost:3000` (alternative local port)
 - `https://ethara-assignment-frontend.vercel.app` (Vercel frontend)
 
+The backend also allows `https://*.vercel.app` origins (preview deployments).
+
+You can add extra origins with `CORS_ORIGINS` on Railway (comma-separated), for example:
+- `CORS_ORIGINS=https://my-custom-domain.com,https://app.example.com`
+
 Additional domains can be added in `backend/src/server.ts` in the `corsOrigins` array.
+
+## 404/CORS Troubleshooting (Important)
+
+If browser logs show 404 for `/api/*` on Railway and CORS blocked from Vercel:
+
+1. Confirm Railway URL is the API service, not a static frontend service.
+2. Open these checks in browser or curl:
+   - `https://<railway-backend-url>/api/health`
+   - `https://<railway-backend-url>/api/version`
+3. In Railway service settings, set root directory to `backend`.
+4. In Vercel frontend settings:
+   - Keep `BACKEND_URL=https://<railway-backend-url>` (no trailing slash)
+   - Remove `VITE_API_URL` for production so frontend uses same-origin `/api` proxy.
+5. Redeploy Railway and Vercel.
 
 ## Features Implemented
 
