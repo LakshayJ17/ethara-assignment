@@ -42,7 +42,7 @@ export async function request<T>(path: string, init: RequestInit = {}, token?: s
       if (!response.ok) {
         const hint =
           text.includes('Cannot POST') || text.includes('Cannot GET')
-            ? ' API request did not reach the backend. On Vercel set VITE_API_URL to your Railway URL and redeploy; on Railway use the app URL (not Vercel) or deploy the full stack from the repo root.'
+            ? ' API did not reach Railway. On Vercel: set BACKEND_URL to your Railway URL (Project → Environment Variables) and redeploy. Or open the Railway app URL instead of Vercel.'
             : '';
         throw new ApiError((text.trim().slice(0, 240) || 'Request failed') + hint, response.status);
       }
