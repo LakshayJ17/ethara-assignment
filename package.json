@@ -1,0 +1,12 @@
+{
+  "name": "etharaai-assignment",
+  "private": true,
+  "description": "Monorepo root for deploy: install/build/start delegate to backend (which builds the React app into backend/public).",
+  "scripts": {
+    "build": "cd backend && npm install && npm run build",
+    "start": "cd backend && npm start"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

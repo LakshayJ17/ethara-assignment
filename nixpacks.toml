@@ -1,0 +1,15 @@
+# Used when Railway (or Nixpacks) builds from the repository root.
+# Ensures Node 20+ and runs the same build as local: backend installs deps,
+# then backend’s build script installs/builds frontend and bundles the API.
+
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm start"
