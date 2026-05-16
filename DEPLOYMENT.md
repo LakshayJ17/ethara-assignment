@@ -36,13 +36,16 @@ The backend can be deployed to Railway or any other Node.js hosting service.
    - `PORT`: Default is 4000
 
 2. **Deploy to Railway**:
-   - Connect your GitHub repository to Railway
-   - Set the environment variables
-   - Railway will automatically deploy
+   - Open your Railway service
+   - Set the service root directory to `backend`
+   - Connect the GitHub repo and redeploy from the latest `main` branch
+   - Add the environment variables above if they are missing
+   - Railway will run `npm install`, `npm run build`, then `npm start` using `backend/package.json`
 
 3. **Get Backend URL**:
    - Once deployed, you'll get a Railway URL like `https://your-service.up.railway.app`
-   - Set this as `BACKEND_URL` in your Vercel project
+   - Set this as `VITE_API_URL` in your Vercel project
+   - If you keep the Vercel proxy route, set `BACKEND_URL` to the same Railway URL as well
 
 ## Local Development
 
@@ -90,9 +93,25 @@ If browser logs show 404 for `/api/*` on Railway and CORS blocked from Vercel:
    - `https://<railway-backend-url>/api/version`
 3. In Railway service settings, set root directory to `backend`.
 4. In Vercel frontend settings:
-   - Keep `BACKEND_URL=https://<railway-backend-url>` (no trailing slash)
-   - Remove `VITE_API_URL` for production so frontend uses same-origin `/api` proxy.
+   - Keep `VITE_API_URL=https://<railway-backend-url>` (no trailing slash)
+   - Optional: set `BACKEND_URL=https://<railway-backend-url>` if you want the Vercel `/api/*` proxy to work too
 5. Redeploy Railway and Vercel.
+
+## Railway Redeploy Checklist
+
+Use this when the live backend is behind the code in this repo:
+
+1. In Railway, open the backend service.
+2. Confirm the root directory is `backend`.
+3. Add or verify `DATABASE_URL`, `JWT_SECRET`, and `PORT`.
+4. Trigger a new deploy from the latest `main` commit.
+5. After deploy, verify these endpoints in a browser or curl:
+   - `/api/health`
+   - `/api/version`
+   - `/api/auth/signup`
+   - `/api/auth/register`
+   - `/api/dashboard/summary`
+6. If any of those still return 404, Railway is still pointing at an old or wrong service.
 
 ## Features Implemented
 

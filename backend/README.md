@@ -73,6 +73,16 @@ Migrations live in `prisma/migrations/`. Production and local `npm start` run **
 2. Add PostgreSQL and set `DATABASE_URL` and `JWT_SECRET` on the service.
 3. Default Nixpacks flow: `npm install`, `npm run build`, `npm start` (see `railway.toml` here).
 
+### If `prisma migrate deploy` fails with `P1000`
+
+This means the `DATABASE_URL` on Railway does not match the attached Postgres service credentials.
+
+1. Open the backend service in Railway.
+2. Check the Variables tab and remove any manually typed `DATABASE_URL`.
+3. Reconnect or re-add the Railway Postgres plugin so Railway injects the correct database URL.
+4. Re-copy `DATABASE_URL` from the Postgres service connection string if needed.
+5. Redeploy the backend after saving the variable changes.
+
 ## Demo flow
 
 1. Sign up as Admin.

@@ -23,9 +23,9 @@ import {
   TabsTrigger,
   Textarea
 } from './components/ui';
-import { clearStoredToken, getStoredToken, request, setStoredRole, setStoredToken } from './lib/api';
+import { ApiError, clearStoredToken, getStoredToken, request, setStoredRole, setStoredToken } from './lib/api';
 import { fetchDashboard, fetchProjects, fetchSessionUser, normalizeUser, signupUser } from './lib/api-compat';
-import type { Dashboard, Project, Role, SeedResponse, Task, TaskPriority, TaskStatus, User } from './lib/types';
+import type { Dashboard, Project, Role, Task, TaskPriority, TaskStatus, User } from './lib/types';
 
 const authRoles: Role[] = ['Admin', 'Member'];
 const projectColors = [
@@ -439,16 +439,112 @@ function App() {
     setError('');
 
     try {
-      const response = await request<SeedResponse>('/api/demo/seed', {
-        method: 'POST',
-        body: '{}'
-      }, token);
-      await refreshWorkspace();
-      if (response.project) {
-        setSelectedProjectId(response.project.id);
+      try {
+        await request('/api/demo/seed', { method: 'POST', body: '{}' }, token);
+        await refreshWorkspace();
+        setWorkspaceTab('board');
+        setNotice('Demo data seeded successfully.');
+        return;
+      } catch (failure) {
+        if (!(failure instanceof ApiError) || failure.status !== 404) {
+          throw failure;
+        }
       }
+
+      if (user.role !== 'Admin') {
+        throw new Error('This deployment does not expose the demo seed endpoint, and this account cannot create projects. Redeploy the backend or sign in as an admin to seed demo data.');
+      }
+
+      const demoMemberPayload = {
+        name: 'Demo Member',
+        email: 'member@demo.local',
+        password: 'Demo123!',
+        role: 'Member'
+      };
+
+      let demoMember: User;
+      try {
+        const signup = await request<{ token: string; user: User }>('/api/auth/signup', {
+          method: 'POST',
+          body: JSON.stringify(demoMemberPayload)
+        });
+        demoMember = normalizeUser(signup.user, 'Member');
+      } catch (signupFailure) {
+        if (!(signupFailure instanceof ApiError) || signupFailure.status !== 409) {
+          throw signupFailure;
+        }
+
+        const login = await request<{ token: string; user: User }>('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email: demoMemberPayload.email, password: demoMemberPayload.password })
+        });
+        demoMember = normalizeUser(login.user, 'Member');
+      }
+
+      const existingProject = projects.find((project) => project.name === 'Launch Sprint') ?? null;
+      const project = existingProject
+        ? existingProject
+        : await request<{ project: Project }>('/api/projects', {
+            method: 'POST',
+            body: JSON.stringify({
+              name: 'Launch Sprint',
+              description: 'A starter workspace showing the task flow, team management, and dashboard metrics.',
+              color: 'sage'
+            })
+          }, token).then((result) => result.project);
+
+      await request(`/api/projects/${project.id}/members`, {
+        method: 'POST',
+        body: JSON.stringify({ email: demoMember.email, role: 'Member' })
+      }, token);
+
+      const existingTaskTitles = new Set(project.tasks.map((task) => task.title));
+      const demoTasks = [
+        {
+          title: 'Wire project overview',
+          description: 'A high-level snapshot of the project and its members.',
+          status: 'Todo' as TaskStatus,
+          priority: 'Medium' as TaskPriority,
+          assigneeId: demoMember.id
+        },
+        {
+          title: 'Assign launch tasks',
+          description: 'Break the work into manageable delivery items.',
+          status: 'InProgress' as TaskStatus,
+          priority: 'High' as TaskPriority,
+          assigneeId: user.id
+        },
+        {
+          title: 'Close overdue cleanup',
+          description: 'Review and close stale tasks before launch.',
+          status: 'Todo' as TaskStatus,
+          priority: 'Low' as TaskPriority,
+          assigneeId: demoMember.id
+        }
+      ];
+
+      for (const task of demoTasks) {
+        if (existingTaskTitles.has(task.title)) {
+          continue;
+        }
+
+        await request(`/api/projects/${project.id}/tasks`, {
+          method: 'POST',
+          body: JSON.stringify({
+            title: task.title,
+            description: task.description,
+            status: task.status,
+            priority: task.priority,
+            dueDate: '',
+            assigneeId: task.assigneeId
+          })
+        }, token);
+      }
+
+      await refreshWorkspace();
+      setSelectedProjectId(project.id);
       setWorkspaceTab('board');
-      setNotice(`Demo member created: ${response.demoMember.email} / ${response.demoMember.password}`);
+      setNotice(`Demo data ready: ${demoMember.email} / Demo123!`);
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Unable to seed demo data');
     } finally {

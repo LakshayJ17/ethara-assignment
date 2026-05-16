@@ -1,0 +1,15 @@
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.env.*
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.*
+node_modules/
+dist/
+.env
+.env.*
+.git/
+.DS_Store
+npm-debug.log*

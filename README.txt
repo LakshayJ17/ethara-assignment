@@ -18,29 +18,25 @@ Requirements: Node.js 20+, PostgreSQL (local or Docker).
 
 3) Open http://localhost:5173 (Vite proxies /api to the API on port 4000).
 
-Production build (single origin)
---------------------------------
-From repo root:
-  npm install
-  npm run build
-  NODE_ENV=production npm start
+Production build
+----------------
+Backend deploys from `backend/`.
+Frontend deploys from `frontend/`.
 
-The API serves the Vite build from frontend/dist when NODE_ENV=production.
+Backend (Railway):
+   cd backend
+   railway up
 
-Railway deployment (mandatory for submission)
---------------------------------------------
-1) Create a new Railway project and add the PostgreSQL plugin.
+Frontend (Vercel):
+   set `VITE_API_URL` to the Railway backend URL and redeploy.
 
-2) Create a Web Service from this GitHub repo (root directory).
-
-3) In the Web Service Variables, set:
-   - DATABASE_URL = (copy from the Railway Postgres service, same as PG provides)
-   - JWT_SECRET   = long random string
-   - NODE_ENV     = production
-
-4) Railway will use nixpacks.toml: install deps, run prisma migrate deploy, build frontend + backend, start the API.
-
-5) After deploy, open the generated public URL and verify /api/health returns {"ok":true}.
+Railway deployment
+------------------
+1) Open the Railway backend service.
+2) Set the service root to `backend`.
+3) Add `DATABASE_URL` and `JWT_SECRET`.
+4) Run `railway up` from `backend/`.
+5) Verify `/api/health` returns `{\"ok\":true}`.
 
 Role rules (summary)
 --------------------
