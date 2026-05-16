@@ -110,7 +110,9 @@ const colorLabel: Record<Project['color'], string> = {
   stone: 'Slate stone'
 };
 
-function initials(name: string) {
+function initials(name?: string | null) {
+  if (!name) return '';
+
   return name
     .split(' ')
     .map((part) => part.trim().charAt(0))
