@@ -2,6 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
+preDeployCommand = "npm exec prisma migrate deploy"
 startCommand = "npm start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 100

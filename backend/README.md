@@ -42,7 +42,7 @@ Full-stack app: Express + Prisma API here; React UI in `../frontend/`, built int
 
 ## Database migrations
 
-Migrations live in `prisma/migrations/`. Production and local `npm start` run **`prisma migrate deploy`** (no `db push`).
+Migrations live in `prisma/migrations/`. Production runs **`prisma migrate deploy`** as a pre-deploy step (no `db push`).
 
 - **`20250501000000_init`**: original tables (legacy enums `MemberRole`, `TaskStatus` TODO/…, `Task.createdById`, int `priority`).
 - **`20250514180100_upgrade_legacy_to_v2`**: upgrades to the current app schema (`User.role`, `Task.creatorId`, enum priorities, etc.).
@@ -61,7 +61,7 @@ Migrations live in `prisma/migrations/`. Production and local `npm start` run **
 | `npm run dev` | API only (watch) |
 | `npm run dev:all` | API + Vite (requires `../frontend` installed) |
 | `npm run build` | Install/build frontend, then bundle API to `dist/` |
-| `npm start` | `prisma migrate deploy` then run `dist/server.js` |
+| `npm start` | run `dist/server.js` |
 | `npm run migrate:dev` | Create/apply migrations in development |
 | `npm run migrate:deploy` | Apply pending migrations (CI / production) |
 | `npm run migrate:reset` | Drop data and re-apply all migrations |
@@ -70,18 +70,18 @@ Migrations live in `prisma/migrations/`. Production and local `npm start` run **
 ## Railway
 
 1. In Railway, set the service **Root Directory** to `backend` (this folder).
-2. Add PostgreSQL and set `DATABASE_URL` and `JWT_SECRET` on the service.
-3. Default Nixpacks flow: `npm install`, `npm run build`, `npm start` (see `railway.toml` here).
+2. Set `DATABASE_URL` to your actual database URL on the service — use the Neon URL if Neon is the database you want.
+3. Set `JWT_SECRET` on the service.
+4. Default Nixpacks flow: `npm install`, `npm run build`, `npm start` (see `railway.toml` here).
 
 ### If `prisma migrate deploy` fails with `P1000`
 
 This means the `DATABASE_URL` on Railway does not match the attached Postgres service credentials.
 
 1. Open the backend service in Railway.
-2. Check the Variables tab and remove any manually typed `DATABASE_URL`.
-3. Reconnect or re-add the Railway Postgres plugin so Railway injects the correct database URL.
-4. Re-copy `DATABASE_URL` from the Postgres service connection string if needed.
-5. Redeploy the backend after saving the variable changes.
+2. Check the Variables tab and remove any manually typed `DATABASE_URL` that points to the wrong database.
+3. Paste the correct Neon connection string into `DATABASE_URL` if Neon is your database.
+4. Redeploy the backend after saving the variable changes.
 
 ## Demo flow
 

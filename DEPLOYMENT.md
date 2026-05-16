@@ -32,7 +32,7 @@ The backend can be deployed to Railway or any other Node.js hosting service.
 
 1. **Environment Variables**:
    - `JWT_SECRET`: A secure random string for JWT signing
-   - `DATABASE_URL`: PostgreSQL connection string
+   - `DATABASE_URL`: Your PostgreSQL connection string (use the Neon URL here if Neon is your database)
    - `PORT`: Default is 4000
 
 2. **Deploy to Railway**:
@@ -40,6 +40,7 @@ The backend can be deployed to Railway or any other Node.js hosting service.
    - Set the service root directory to `backend`
    - Connect the GitHub repo and redeploy from the latest `main` branch
    - Add the environment variables above if they are missing
+   - If you want Neon, paste the Neon connection string into `DATABASE_URL` and remove any Railway Postgres override
    - Railway will run `npm install`, `npm run build`, then `npm start` using `backend/package.json`
 
 3. **Get Backend URL**:
