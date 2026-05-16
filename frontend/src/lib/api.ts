@@ -1,15 +1,9 @@
 const TOKEN_KEY = 'team-task-manager-token';
 const ROLE_KEY = 'team-task-manager-role';
 
-const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
-
-const shouldUseSameOriginApi = (path: string) => {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  return window.location.hostname.endsWith('.vercel.app') && path.startsWith('/api');
-};
+const defaultProductionApiBase = 'https://backend-production-20c3.up.railway.app';
+const configuredApiBase = import.meta.env.VITE_API_URL?.trim();
+const apiBase = (configuredApiBase || defaultProductionApiBase).replace(/\/$/, '');
 
 export const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
 export const setStoredToken = (token: string) => localStorage.setItem(TOKEN_KEY, token);
@@ -39,11 +33,7 @@ export class ApiError extends Error {
 export async function request<T>(path: string, init: RequestInit = {}, token?: string | null): Promise<T> {
   const sendJson = typeof init.body === 'string' && init.body.length > 0;
 
-  const url = path.startsWith('http')
-    ? path
-    : shouldUseSameOriginApi(path)
-      ? path
-      : `${apiBase}${path}`;
+  const url = path.startsWith('http') ? path : `${apiBase}${path}`;
 
   const response = await fetch(url, {
     ...init,
@@ -67,7 +57,7 @@ export async function request<T>(path: string, init: RequestInit = {}, token?: s
       if (!response.ok) {
         const hint =
           text.includes('Cannot POST') || text.includes('Cannot GET')
-            ? ' API did not reach Railway. On Vercel: set BACKEND_URL to your Railway URL (Project → Environment Variables) and redeploy. Or open the Railway app URL instead of Vercel.'
+            ? ' API did not reach the backend. If this is the hosted site, set VITE_API_URL to your Railway API URL or redeploy with the current default backend URL.'
             : '';
         throw new ApiError((text.trim().slice(0, 240) || 'Request failed') + hint, response.status);
       }

@@ -10,13 +10,13 @@ If signup shows `NOT_FOUND` on `/api/auth/signup`, the Vercel project is not see
 
 1. **Environment Variables on Vercel**:
    - Go to your Vercel project settings
-   - Add the following environment variable:
-     - `BACKEND_URL`: The URL of your backend API (e.g., `https://your-backend.up.railway.app`)
-   - No trailing slash on the URL
+   - Recommended: add `VITE_API_URL=https://backend-production-20c3.up.railway.app`
+   - If you use `VITE_API_URL`, make sure it is not empty and has no trailing slash
+   - Optional: add `BACKEND_URL=https://backend-production-20c3.up.railway.app` if you still use the Vercel API proxy route
 
 2. **If you still see `NOT_FOUND`**:
    - Redeploy the Vercel project after this commit.
-   - Make sure the project root contains the `api` folder from this repo.
+   - Make sure the project root contains the `api` folder from this repo if you rely on the proxy route.
    - If your Vercel project root is `frontend`, keep the existing `frontend/api/[...path].ts` route.
    - If your Vercel project root is the repository root, the new top-level `api/[...path].ts` route will handle `/api/*`.
 
