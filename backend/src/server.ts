@@ -255,7 +255,8 @@ const corsOrigins = [
 ];
 
 const corsOriginPatterns = [
-  /^https:\/\/[a-z0-9-]+\.vercel\.app$/i
+  /^https:\/\/[a-z0-9-]+\.vercel\.app$/i,
+  /^https:\/\/([a-z0-9-]+\.)?bylakshayjain\.online$/i
 ];
 
 app.use(cors({
